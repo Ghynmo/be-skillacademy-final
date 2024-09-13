@@ -4,6 +4,8 @@ import (
 	"be-skillacademy-final/api"
 	"be-skillacademy-final/db"
 	"be-skillacademy-final/model"
+	repo "be-skillacademy-final/repository"
+	"be-skillacademy-final/service"
 	"log"
 	"os"
 	"strconv"
@@ -17,22 +19,19 @@ func main()  {
         log.Fatal("Error loading .env file")
     }
 
-    dbHost := os.Getenv("DB_HOST")
-    dbUser := os.Getenv("DB_USER")
-    dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
    	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
-		log.Fatal("Error conver port")
+		log.Fatal("Error convert port")
 	}
 
 	db := db.NewDB()
+	
 	dbCredential := model.Credential{
-		Host:         dbHost,
-		Username:     dbUser,
-		Password:     dbPassword,
-		DatabaseName: dbName,
-		Port:			port,
+		Host:         os.Getenv("DB_HOST"),
+		Username:     os.Getenv("DB_USER"),
+		Password:     os.Getenv("DB_PASSWORD"),
+		DatabaseName: os.Getenv("DB_NAME"),
+		Port:		  port,
 		Schema:       "public",
 	}
 
@@ -41,13 +40,15 @@ func main()  {
 		panic(err)
 	}
 
-	conn.AutoMigrate() //&model.User{} as parameter
+	conn.AutoMigrate(&model.User{}, &model.Session{})
 
-	// userRepo := repo.NewUserRepo(conn)
-
-	// userService := service.NewUserService(userRepo)
+	userRepo := repo.NewUserRepo(conn)
+	sessionRepo := repo.NewSessionRepo(conn)
+	
+	userService := service.NewUserService(userRepo)
+	sessionService := service.NewSessionService(sessionRepo)
 	
 
-	mainAPI := api.NewAPI() //userService as parameter
+	mainAPI := api.NewAPI(userService, sessionService)
 	mainAPI.Start()
 }

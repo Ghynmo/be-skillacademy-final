@@ -1,25 +1,29 @@
 package api
 
 import (
-	// "be-skillacademy-final/service"
+	"be-skillacademy-final/service"
 
 	"fmt"
 	"net/http"
 )
 
 type API struct {
-	// userService    service.UserService
+	userService    service.UserService
+	sessionService service.SessionService
 	mux            *http.ServeMux
 }
 
-func NewAPI() API { //userService service.UserService as parameter
+func NewAPI(userService service.UserService, sessionService service.SessionService) API {
 	mux := http.NewServeMux()
 	api := API{
-		// userService,
+		userService,
+		sessionService,
 		mux,
 	}
 
-	// mux.Handle("/user/register", api.Post(http.HandlerFunc(api.Register)))
+	mux.Handle("/user/register", http.HandlerFunc(api.Register))
+	mux.Handle("/user/login", http.HandlerFunc(api.Login))
+	mux.Handle("/user/logout", http.HandlerFunc(api.Logout))
 
 	return api
 }
